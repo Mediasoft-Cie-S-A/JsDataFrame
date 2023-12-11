@@ -1,5 +1,5 @@
 
-const df = new DataFrame(data);
+var df = new DataFrame(data);
 
 console.log("Sum of ages:", df.sum('age'));
 console.log("Average age:", df.avg('age'));

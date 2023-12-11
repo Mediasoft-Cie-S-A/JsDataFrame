@@ -1,5 +1,5 @@
 // Example DataFrame creation
-const df = new DataFrame([
+  df = new DataFrame([
     { year: 2018, value: 10 },
     { year: 2019, value: 15 },
     { year: 2020, value: 20 },
