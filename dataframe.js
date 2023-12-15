@@ -14,436 +14,406 @@
  * limitations under the License.
  */
 class DataFrame {
+    // declare data property
+    data = [];
+    // constructor of dataframe
     constructor(data) {
-        this.data = data;
+        if (data === undefined) {
+          this.data = [];
+        }
+        else
+        {
+        this.data = data;     
+        }
+    }
+    //convert to array
+    toArray() {
+        return this.data;
+    }
+    // insert row to dataframe
+    push(row) {
+        this.data.push(row);
+     
     }
     // get dataframe headers
-    get headers() {
+    headers() {
+      //  console.log(this.data[0]);
+      // check if data is empty
+        if(this.data.length === 0)
+        {
+            return [];
+        }
+
         return Object.keys(this.data[0]);
     }
-    // Returns a new DataFrame with the selected columns
-    show() {
-        console.table(this.data);
-    }
-    // Returns a sum of the values in the column
-    sum(column) {
-        return this.data.reduce((acc, row) => acc + (row[column] || 0), 0);
-    }
-    // Returns an average of the values in the column
-    avg(column) {
-        return this.sum(column) / this.data.length;
-    }
-    // Returns the number of rows in the DataFrame
+
+    // get count of rows    
     count() {
         return this.data.length;
     }
-    // Returns the values in the column as  count
-    count(column) {
-        return this.data.filter(row => row[column]).length;
-    }
-    // Returns the values in the column as unique count
-    uniqueCount(column) {
-        return new Set(this.data.map(row => row[column])).size;
-    }
-    // Returns the values gropued by the columns as an object
-    groupBy(column) {
-        return this.data.reduce((acc, row) => {
-            const key = row[column];
-            acc[key] = acc[key] || [];
-            acc[key].push(row);
-            return acc;
-        }, {});
-    }
-    // Returns the values in the column as an array
-    getColumn(column) {
-        return this.data.map(row => row[column]);
-    }
-    having(column, condition) {
-        const grouped = this.groupBy(column);
-        return Object.keys(grouped).filter(key => condition(grouped[key])).map(key => ({ [column]: key, count: grouped[key].length }));
-    }
-    // predicate is a function that takes a row and returns true or false
-    // Returns a new DataFrame with the rows that match the predicate
-    // Example: df.where(row => row.age > 30)
-    where(predicate) {
-        return new DataFrame(this.data.filter(predicate));
-    }
-    // Returns a new DataFrame with the rows sorted by the column
-    // Example: df.sortBy('age')
-    sortBy(column) {
-        return new DataFrame(this.data.sort((a, b) => a[column] - b[column]));
-    }
-    // Returns a new DataFrame with the rows sorted by the column in descending order
-    // Example: df.sortByDesc('age')
-    sortByDesc(column) {
-        return new DataFrame(this.data.sort((a, b) => b[column] - a[column]));
-    }
-    // Returns a new DataFrame with the rows sorted by the columns
-    // Example: df.sortBy('age', 'name')    
-    sortByColumns(...columns) {
-        return new DataFrame(this.data.sort((a, b) => {
-            for (let column of columns) {
-                if (a[column] !== b[column]) {
-                    return a[column] - b[column];
-                }
-            }
-            return 0;
-        }));
-    }
-    // Returns a new DataFrame with the rows sorted by the columns in descending order
-    // Example: df.sortByDesc('age', 'name')    
-    sortByColumnsDesc(...columns) {
-        return new DataFrame(this.data.sort((a, b) => {
-            for (let column of columns) {
-                if (a[column] !== b[column]) {
-                    return b[column] - a[column];
-                }
-            }
-            return 0;
-        }));
-    }
-    // Returns a new DataFrame with the rows sorted by the columns in descending order
-    // Example: df.sortByColumns('age', 'name')
-    // Example: df.sortByColumns('age', 'name').show()
-    // Example: df.sortByColumns('age', 'name').show(2)
-    // Example: df.sortByColumns('age', 'name').show(2, 5)
-    // Example: df.sortByColumns('age', 'name').show(2, 5, true)
-    show(start, end, truncate) {
-        const columns = Object.keys(this.data[0]);
-        const header = columns.join('\t');
-        const rows = this.data.slice(start, end).map(row => columns.map(column => row[column]).join('\t'));
-        console.log(header);
-        console.log(rows.join('\n'));
-        if (truncate) {
-            console.log('...');
-        }
-    }
-    // return a new dataframe with the selected columns 
-    select(...columns) {
-        return new DataFrame(this.data.map(row => {
-            const selected = {};
-            for (let column of columns) {
-                selected[column] = row[column];
-            }
-            return selected;
-        }));
-    }
-    // return a new dataframe with the selected columns renamed
-    rename(mapping) {
-        return new DataFrame(this.data.map(row => {
-            const renamed = {};
-            for (let column in row) {
-                renamed[mapping[column] || column] = row[column];
-            }
-            return renamed;
-        }));
-    }
-    // return a new dataframe with the selected columns renamed
-    withColumn(column, fn) {
-        return new DataFrame(this.data.map(row => ({ ...row, [column]: fn(row) })));
-    }
-    // return a new dataframe with the selected columns renamed
-    withColumnRenamed(column, newColumn) {
-        return new DataFrame(this.data.map(row => {
-            const newRow = { ...row };
-            newRow[newColumn] = newRow[column];
-            delete newRow[column];
-            return newRow;
-        }));
+    // sum of array
+    sumArray(array) {
+        return array.reduce((a, b) => a + b, 0);
     }
 
-    // drop the selected columns
-    drop(...columns) {
-        return new DataFrame(this.data.map(row => {
-            const selected = { ...row };
-            for (let column of columns) {
-                delete selected[column];
+    
+    // sum column and retun value
+    sum(column) {
+        var sum = 0;
+         // check is column exist
+         if (this.data[1][column] === undefined) {
+            // rise error
+            throw new Error('Column ' + column + ' does not exist');
+        }
+
+        // check if column is number
+        if (isNaN(this.data[1][column])) {
+            throw new Error('Column ' + column + ' is not a number');
+        }
+        for (var i = 0; i < this.data.length; i++) {
+           
+            console.log(this.data[i][column]);
+            sum += this.data[i][column];
+        }
+        return sum ;
+    }
+
+    // get max value of column
+    max(column) {
+        var max = 0;
+        for (var i = 0; i < this.data.length; i++) {
+            // check is column exist
+            if (this.data[i][column] === undefined) {
+                // rise error
+                throw new Error('Column ' + column + ' does not exist');
             }
-            return selected;
-        }));        
-    }
-    // return a new dataframe with calculated columns
-    // Example: df.withColumn('ageInMonths', row => row.age * 12)
-    // Example: df.withColumn('ageInMonths', row => row.age * 12).show()
-    // Example: df.withColumn('ageInMonths', row => row.age * 12).show(2)
-    // Example: df.withColumn('ageInMonths', row => row.age * 12).show(2, 5)
-    // Example: df.withColumn('ageInMonths', row => row.age * 12).show(2, 5, true)
-    // Example: df.withColumn('ageInMonths', row => row.age * 12).select('ageInMonths').show()
-    // Example: df.withColumn('ageInMonths', row => row.age * 12).select('ageInMonths').show(2)
-    // Example: df.withColumn('ageInMonths', row => row.age * 12).select('ageInMonths').show(2, 5)
-    // Example: df.withColumn('ageInMonths', row => row.age * 12).select('ageInMonths').show(2, 5, true)
-    // Example: df.withColumn('ageInMonths', row => row.age * 12).select('ageInMonths').avg('ageInMonths')
-    // Example: df.withColumn('ageInMonths', row => row.age * 12).select('ageInMonths').avg('ageInMonths').show()
-    // Example: df.withColumn('ageInMonths', row => row.age * 12).select('ageInMonths').avg('ageInMonths').show(2)
-    // Example: df.withColumn('ageInMonths', row => row.age * 12).select('ageInMonths').avg('ageInMonths').show(2, 5)
-    // Example: df.withColumn('ageInMonths', row => row.age * 12).select('ageInMonths').avg('ageInMonths').show(2, 5, true)
-    // Example: df.withColumn('ageInMonths', row => row.age * 12).select('ageInMonths').avg('ageInMonths').count()
-    // Example: df.withColumn('ageInMonths', row => row.age * 12).select('ageInMonths').avg('ageInMonths').count().show()
-    // Example: df.withColumn('ageInMonths', row => row.age * 12).select('ageInMonths').avg('ageInMonths').count().show(2)
-    // Example: df.withColumn('ageInMonths', row => row.age * 12).select('ageInMonths').avg('ageInMonths').count().show(2, 5)
-    // Example: df.withColumn('ageInMonths', row => row.age * 12).select('ageInMonths').avg('ageInMonths').count().show(2, 5, true)
-    // Example: df.withColumn('ageInMonths', row => row.age * 12).select('ageInMonths').avg('ageInMonths').count().count()
-    // Example: df.withColumn('ageInMonths', row => row.age * 12).select('ageInMonths').avg('ageInMonths').count().count().show()
-    // Example: df.withColumn('ageInMonths', row => row.age * 12).select('ageInMonths').avg('ageInMonths').count().count().show(2)
-    // return a new dataframe with joined columns form the other dataframe
-    // Example: df.join(df2, 'id')
-    // Example: df.join(df2, 'id').show()
-    // Example: df.join(df2, 'id').show(2)
-    // Example: df.join(df2, 'id').show(2, 5)   
-    // Example: df.join(df2, 'id').show(2, 5, true)
-    // Example: df.join(df2, 'id').select('name', 'age', 'city', 'country').show()
-    // Example: df.join(df2, 'id').select('name', 'age', 'city', 'country').show(2)
-    // Example: df.join(df2, 'id').select('name', 'age', 'city', 'country').show(2, 5)
-    // Example: df.join(df2, 'id').select('name', 'age', 'city', 'country').show(2, 5, true)
-    // Example: df.join(df2, 'id').select('name', 'age', 'city', 'country').avg('age').show()
-    // Example: df.join(df2, 'id').select('name', 'age', 'city', 'country').avg('age').show(2)
-    // Example: df.join(df2, 'id').select('name', 'age', 'city', 'country').avg('age').show(2, 5)
-    // Example: df.join(df2, 'id').select('name', 'age', 'city', 'country').avg('age').show(2, 5, true)
-    // Example: df.join(df2, 'id').select('name', 'age', 'city', 'country').avg('age').count()
-    // Example: df.join(df2, 'id').select('name', 'age', 'city', 'country').avg('age').count().show()
-    // Example: df.join(df2, 'id').select('name', 'age', 'city', 'country').avg('age').count().show(2)
-    // Example: df.join(df2, 'id').select('name', 'age', 'city', 'country').avg('age').count().show(2, 5)
-    // Example: df.join(df2, 'id').select('name', 'age', 'city', 'country').avg('age').count().show(2, 5, true)
-    join(df2, column) {
-        const mapping = df2.groupBy(column);
-        return new DataFrame(this.data.map(row => ({ ...row, ...mapping[row[column]][0] })));
-    }
-    // return a new dataframe with merge columns form the other dataframe
-    // Example: df.merge(df2, 'id')
-    // Example: df.merge(df2, 'id').show()
-    // Example: df.merge(df2, 'id').show(2)
-    // Example: df.merge(df2, 'id').show(2, 5)
-    // Example: df.merge(df2, 'id').show(2, 5, true)
-    // Example: df.merge(df2, 'id').select('name', 'age', 'city', 'country').show()
-    // Example: df.merge(df2, 'id').select('name', 'age', 'city', 'country').show(2)
-    // Example: df.merge(df2, 'id').select('name', 'age', 'city', 'country').show(2, 5)
-    // Example: df.merge(df2, 'id').select('name', 'age', 'city', 'country').show(2, 5, true)
-    // Example: df.merge(df2, 'id').select('name', 'age', 'city', 'country').avg('age').show()
-    // Example: df.merge(df2, 'id').select('name', 'age', 'city', 'country').avg('age').show(2)
-    // Example: df.merge(df2, 'id').select('name', 'age', 'city', 'country').avg('age').show(2, 5)
-    // Example: df.merge(df2, 'id').select('name', 'age', 'city', 'country').avg('age').show(2, 5, true)
-    // Example: df.merge(df2, 'id').select('name', 'age', 'city', 'country').avg('age').count()
-    // Example: df.merge(df2, 'id').select('name', 'age', 'city', 'country').avg('age').count().show()
-    // Example: df.merge(df2, 'id').select('name', 'age', 'city', 'country').avg('age').count().show(2)
-    // Example: df.merge(df2, 'id').select('name', 'age', 'city', 'country').avg('age').count().show(2, 5)
-    // Example: df.merge(df2, 'id').select('name', 'age', 'city', 'country').avg('age').count().show(2, 5, true)
-    merge(df2, column) {
-        const mapping = df2.groupBy(column);
-        return new DataFrame(this.data.map(row => ({ ...row, ...mapping[row[column]][0] })));
-    }
-    // return a new dataframe with joined columns form the other dataframe with the same column name
-    // Example: df.join(df2)
-    // Example: df.join(df2).show()
-    // Example: df.join(df2).show(2)
-    // Example: df.join(df2).show(2, 5)
-    // Example: df.join(df2).show(2, 5, true)
-    // Example: df.join(df2).select('name', 'age', 'city', 'country').show()
-    // Example: df.join(df2).select('name', 'age', 'city', 'country').show(2)
-    // Example: df.join(df2).select('name', 'age', 'city', 'country').show(2, 5)
-    // Example: df.join(df2).select('name', 'age', 'city', 'country').show(2, 5, true)
-    // Example: df.join(df2).select('name', 'age', 'city', 'country').avg('age').show()
-    // Example: df.join(df2).select('name', 'age', 'city', 'country').avg('age').show(2)
-    // Example: df.join(df2).select('name', 'age', 'city', 'country').avg('age').show(2, 5)
-    // Example: df.join(df2).select('name', 'age', 'city', 'country').avg('age').show(2, 5, true)
-    // Example: df.join(df2).select('name', 'age', 'city', 'country').avg('age').count()
-    // Example: df.join(df2).select('name', 'age', 'city', 'country').avg('age').count().show()
-    // Example: df.join(df2).select('name', 'age', 'city', 'country').avg('age').count().show(2)
-    // Example: df.join(df2).select('name', 'age', 'city', 'country').avg('age').count().show(2, 5)
-    // Example: df.join(df2).select('name', 'age', 'city', 'country').avg('age').count().show(2, 5, true)
-    join(df2) {
-        const mapping = df2.groupBy(column);
-        return new DataFrame(this.data.map(row => ({ ...row, ...mapping[row[column]][0] })));
-    }        
-    // return a new dataframe with merged columns form the other dataframe with the same column name
-    // Example: df.merge(df2)
-    // Example: df.merge(df2).show()
-    // Example: df.merge(df2).show(2)
-    // Example: df.merge(df2).show(2, 5)
-    // Example: df.merge(df2).show(2, 5, true)
-    // Example: df.merge(df2).select('name', 'age', 'city', 'country').show()
-    // Example: df.merge(df2).select('name', 'age', 'city', 'country').show(2)
-    // Example: df.merge(df2).select('name', 'age', 'city', 'country').show(2, 5)
-    // Example: df.merge(df2).select('name', 'age', 'city', 'country').show(2, 5, true)
-    // Example: df.merge(df2).select('name', 'age', 'city', 'country').avg('age').show()
-    // Example: df.merge(df2).select('name', 'age', 'city', 'country').avg('age').show(2)
-    // Example: df.merge(df2).select('name', 'age', 'city', 'country').avg('age').show(2, 5)
-    // Example: df.merge(df2).select('name', 'age', 'city', 'country').avg('age').show(2, 5, true)
-    // Example: df.merge(df2).select('name', 'age', 'city', 'country').avg('age').count()
-    // Example: df.merge(df2).select('name', 'age', 'city', 'country').avg('age').count().show()
-    // Example: df.merge(df2).select('name', 'age', 'city', 'country').avg('age').count().show(2)
-    // Example: df.merge(df2).select('name', 'age', 'city', 'country').avg('age').count().show(2, 5)
-    // Example: df.merge(df2).select('name', 'age', 'city', 'country').avg('age').count().show(2, 5, true)
-    merge(df2) {
-        const mapping = df2.groupBy(column);
-        return new DataFrame(this.data.map(row => ({ ...row, ...mapping[row[column]][0] })));
-    }
-    // return a new dataframe with summed columns form the other dataframe with the same column name    
-    // Example: df.sum(df2)
-    // Example: df.sum(df2).show()
-    // Example: df.sum(df2).show(2)
-    // Example: df.sum(df2).show(2, 5)
-    // Example: df.sum(df2).show(2, 5, true)
-    // Example: df.sum(df2).select('name', 'age', 'city', 'country').show()
-    // Example: df.sum(df2).select('name', 'age', 'city', 'country').show(2)
-    // Example: df.sum(df2).select('name', 'age', 'city', 'country').show(2, 5)
-    // Example: df.sum(df2).select('name', 'age', 'city', 'country').show(2, 5, true)
-    // Example: df.sum(df2).select('name', 'age', 'city', 'country').avg('age').show()
-    // Example: df.sum(df2).select('name', 'age', 'city', 'country').avg('age').show(2)
-    // Example: df.sum(df2).select('name', 'age', 'city', 'country').avg('age').show(2, 5)
-    // Example: df.sum(df2).select('name', 'age', 'city', 'country').avg('age').show(2, 5, true)
-    // Example: df.sum(df2).select('name', 'age', 'city', 'country').avg('age').count()
-    // Example: df.sum(df2).select('name', 'age', 'city', 'country').avg('age').count().show()
-    // Example: df.sum(df2).select('name', 'age', 'city', 'country').avg('age').count().show(2)
-    // Example: df.sum(df2).select('name', 'age', 'city', 'country').avg('age').count().show(2, 5)
-    // Example: df.sum(df2).select('name', 'age', 'city', 'country').avg('age').count().show(2, 5, true)
-    sum(df2) {
-        const mapping = df2.groupBy(column);
-        return new DataFrame(this.data.map(row => ({ ...row, ...mapping[row[column]][0] })));
-    }
-    // return a new dataframe with averaged columns form the other dataframe with the same column name
-    // Example: df.avg(df2)
-    // Example: df.avg(df2).show()
-    // Example: df.avg(df2).show(2)
-    // Example: df.avg(df2).show(2, 5)
-    // Example: df.avg(df2).show(2, 5, true)
-    // Example: df.avg(df2).select('name', 'age', 'city', 'country').show()
-    // Example: df.avg(df2).select('name', 'age', 'city', 'country').show(2)
-    // Example: df.avg(df2).select('name', 'age', 'city', 'country').show(2, 5)
-    // Example: df.avg(df2).select('name', 'age', 'city', 'country').show(2, 5, true)
-    // Example: df.avg(df2).select('name', 'age', 'city', 'country').avg('age').show()
-    // Example: df.avg(df2).select('name', 'age', 'city', 'country').avg('age').show(2)
-    // Example: df.avg(df2).select('name', 'age', 'city', 'country').avg('age').show(2, 5)
-    // Example: df.avg(df2).select('name', 'age', 'city', 'country').avg('age').show(2, 5, true)
-    // Example: df.avg(df2).select('name', 'age', 'city', 'country').avg('age').count()
-    // Example: df.avg(df2).select('name', 'age', 'city', 'country').avg('age').count().show()
-    // Example: df.avg(df2).select('name', 'age', 'city', 'country').avg('age').count().show(2)
-    // Example: df.avg(df2).select('name', 'age', 'city', 'country').avg('age').count().show(2, 5)
-    // Example: df.avg(df2).select('name', 'age', 'city', 'country').avg('age').count().show(2, 5, true)
-    avg(df2) {
-        const mapping = df2.groupBy(column);
-        return new DataFrame(this.data.map(row => ({ ...row, ...mapping[row[column]][0] })));
-    }
-    // return a new dataframe with summed columns form the other dataframe with the different column name 
-    // Example: df.sum(df2, 'id', 'id2')
-    // Example: df.sum(df2, 'id', 'id2').show()
-    // Example: df.sum(df2, 'id', 'id2').show(2)
-    // Example: df.sum(df2, 'id', 'id2').show(2, 5)
-    // Example: df.sum(df2, 'id', 'id2').show(2, 5, true)
-    // Example: df.sum(df2, 'id', 'id2').select('name', 'age', 'city', 'country').show()
-    // Example: df.sum(df2, 'id', 'id2').select('name', 'age', 'city', 'country').show(2)
-    // Example: df.sum(df2, 'id', 'id2').select('name', 'age', 'city', 'country').show(2, 5)
-    // Example: df.sum(df2, 'id', 'id2').select('name', 'age', 'city', 'country').show(2, 5, true)
-    // Example: df.sum(df2, 'id', 'id2').select('name', 'age', 'city', 'country').avg('age').show()
-    // Example: df.sum(df2, 'id', 'id2').select('name', 'age', 'city', 'country').avg('age').show(2)
-    // Example: df.sum(df2, 'id', 'id2').select('name', 'age', 'city', 'country').avg('age').show(2, 5)
-    // Example: df.sum(df2, 'id', 'id2').select('name', 'age', 'city', 'country').avg('age').show(2, 5, true)
-    // Example: df.sum(df2, 'id', 'id2').select('name', 'age', 'city', 'country').avg('age').count()
-    // Example: df.sum(df2, 'id', 'id2').select('name', 'age', 'city', 'country').avg('age').count().show()
-    // Example: df.sum(df2, 'id', 'id2').select('name', 'age', 'city', 'country').avg('age').count().show(2)
-    // Example: df.sum(df2, 'id', 'id2').select('name', 'age', 'city', 'country').avg('age').count().show(2, 5)
-    // Example: df.sum(df2, 'id', 'id2').select('name', 'age', 'city', 'country').avg('age').count().show(2, 5, true)
-    sum(df2, column, newColumn) {
-        const mapping = df2.groupBy(column);
-        return new DataFrame(this.data.map(row => ({ ...row, ...mapping[row[column]][0] })));
-    }
-    // return a new dataframe with averaged columns form the other dataframe with the different column name
-    // Example: df.avg(df2, 'id', 'id2')
-    // Example: df.avg(df2, 'id', 'id2').show()
-    // Example: df.avg(df2, 'id', 'id2').show(2)
-    // Example: df.avg(df2, 'id', 'id2').show(2, 5)
-    // Example: df.avg(df2, 'id', 'id2').show(2, 5, true)
-    // Example: df.avg(df2, 'id', 'id2').select('name', 'age', 'city', 'country').show()
-    // Example: df.avg(df2, 'id', 'id2').select('name', 'age', 'city', 'country').show(2)
-    // Example: df.avg(df2, 'id', 'id2').select('name', 'age', 'city', 'country').show(2, 5)
-    // Example: df.avg(df2, 'id', 'id2').select('name', 'age', 'city', 'country').show(2, 5, true)
-    // Example: df.avg(df2, 'id', 'id2').select('name', 'age', 'city', 'country').avg('age').show()
-    // Example: df.avg(df2, 'id', 'id2').select('name', 'age', 'city', 'country').avg('age').show(2)
-    // Example: df.avg(df2, 'id', 'id2').select('name', 'age', 'city', 'country').avg('age').show(2, 5)
-    // Example: df.avg(df2, 'id', 'id2').select('name', 'age', 'city', 'country').avg('age').show(2, 5, true)
-    // Example: df.avg(df2, 'id', 'id2').select('name', 'age', 'city', 'country').avg('age').count()
-    // Example: df.avg(df2, 'id', 'id2').select('name', 'age', 'city', 'country').avg('age').count().show()
-    // Example: df.avg(df2, 'id', 'id2').select('name', 'age', 'city', 'country').avg('age').count().show(2)
-    // Example: df.avg(df2, 'id', 'id2').select('name', 'age', 'city', 'country').avg('age').count().show(2, 5)
-    // Example: df.avg(df2, 'id', 'id2').select('name', 'age', 'city', 'country').avg('age').count().show(2, 5, true)
-    avg(df2, column) {
-        const mapping = df2.groupBy(column);
-        return new DataFrame(this.data.map(row => ({ ...row, ...mapping[row[column]][0] })));
-    }
-    // return a new dataframe with difference columns form the other dataframe with the different column name 
-    // Example: df.diff(df2, 'id', 'id2')
-    // Example: df.diff(df2, 'id', 'id2').show()
-    // Example: df.diff(df2, 'id', 'id2').show(2)
-    // Example: df.diff(df2, 'id', 'id2').show(2, 5)
-    // Example: df.diff(df2, 'id', 'id2').show(2, 5, true)
-    // Example: df.diff(df2, 'id', 'id2').select('name', 'age', 'city', 'country').show()
-    // Example: df.diff(df2, 'id', 'id2').select('name', 'age', 'city', 'country').show(2)
-    // Example: df.diff(df2, 'id', 'id2').select('name', 'age', 'city', 'country').show(2, 5)
-    // Example: df.diff(df2, 'id', 'id2').select('name', 'age', 'city', 'country').show(2, 5, true)
-    // Example: df.diff(df2, 'id', 'id2').select('name', 'age', 'city', 'country').avg('age').show()
-    // Example: df.diff(df2, 'id', 'id2').select('name', 'age', 'city', 'country').avg('age').show(2)
-    // Example: df.diff(df2, 'id', 'id2').select('name', 'age', 'city', 'country').avg('age').show(2, 5)
-    // Example: df.diff(df2, 'id', 'id2').select('name', 'age', 'city', 'country').avg('age').show(2, 5, true)
-    // Example: df.diff(df2, 'id', 'id2').select('name', 'age', 'city', 'country').avg('age').count()
-    // Example: df.diff(df2, 'id', 'id2').select('name', 'age', 'city', 'country').avg('age').count().show()
-    // Example: df.diff(df2, 'id', 'id2').select('name', 'age', 'city', 'country').avg('age').count().show(2)
-    // Example: df.diff(df2, 'id', 'id2').select('name', 'age', 'city', 'country').avg('age').count().show(2, 5)
-    // Example: df.diff(df2, 'id', 'id2').select('name', 'age', 'city', 'country').avg('age').count().show(2, 5, true)
-    diff(df2, column, newColumn) {
-        const mapping = df2.groupBy(column);
-        return new DataFrame(this.data.map(row => ({ ...row, ...mapping[row[column]][0] })));
-    }
-    // return a new dataframe with product columns form the other dataframe with the same column name
-    // Example: df.product(df2)
-    // Example: df.product(df2).show()
-    // Example: df.product(df2).show(2)
-    // Example: df.product(df2).show(2, 5)
-    // Example: df.product(df2).show(2, 5, true)
-    // Example: df.product(df2).select('name', 'age', 'city', 'country').show()
-    // Example: df.product(df2).select('name', 'age', 'city', 'country').show(2)
-    // Example: df.product(df2).select('name', 'age', 'city', 'country').show(2, 5)
-    // Example: df.product(df2).select('name', 'age', 'city', 'country').show(2, 5, true)
-    // Example: df.product(df2).select('name', 'age', 'city', 'country').avg('age').show()
-    // Example: df.product(df2).select('name', 'age', 'city', 'country').avg('age').show(2)
-    // Example: df.product(df2).select('name', 'age', 'city', 'country').avg('age').show(2, 5)
-    // Example: df.product(df2).select('name', 'age', 'city', 'country').avg('age').show(2, 5, true)
-    // Example: df.product(df2).select('name', 'age', 'city', 'country').avg('age').count()
-    // Example: df.product(df2).select('name', 'age', 'city', 'country').avg('age').count().show()
-    // Example: df.product(df2).select('name', 'age', 'city', 'country').avg('age').count().show(2)
-    // Example: df.product(df2).select('name', 'age', 'city', 'country').avg('age').count().show(2, 5)
-    // Example: df.product(df2).select('name', 'age', 'city', 'country').avg('age').count().show(2, 5, true)
-    product(df2) {
-        const mapping = df2.groupBy(column);
-        return new DataFrame(this.data.map(row => ({ ...row, ...mapping[row[column]][0] })));
-    }
-    // return a new dataframe with quotient columns form the other dataframe with the same column name
-    // Example: df.quotient(df2)
-    // Example: df.quotient(df2).show()
-    // Example: df.quotient(df2).show(2)
-    // Example: df.quotient(df2).show(2, 5)
-    // Example: df.quotient(df2).show(2, 5, true)
-    // Example: df.quotient(df2).select('name', 'age', 'city', 'country').show()
-    // Example: df.quotient(df2).select('name', 'age', 'city', 'country').show(2)
-    // Example: df.quotient(df2).select('name', 'age', 'city', 'country').show(2, 5)
-    // Example: df.quotient(df2).select('name', 'age', 'city', 'country').show(2, 5, true)
-    // Example: df.quotient(df2).select('name', 'age', 'city', 'country').avg('age').show()
-    // Example: df.quotient(df2).select('name', 'age', 'city', 'country').avg('age').show(2)
-    // Example: df.quotient(df2).select('name', 'age', 'city', 'country').avg('age').show(2, 5)
-    // Example: df.quotient(df2).select('name', 'age', 'city', 'country').avg('age').show(2, 5, true)
-    // Example: df.quotient(df2).select('name', 'age', 'city', 'country').avg('age').count()
-    // Example: df.quotient(df2).select('name', 'age', 'city', 'country').avg('age').count().show()
-    // Example: df.quotient(df2).select('name', 'age', 'city', 'country').avg('age').count().show(2)
-    // Example: df.quotient(df2).select('name', 'age', 'city', 'country').avg('age').count().show(2, 5)
-    // Example: df.quotient(df2).select('name', 'age', 'city', 'country').avg('age').count().show(2, 5, true)
-    quotient(df2) {
-        const mapping = df2.groupBy(column);
-        return new DataFrame(this.data.map(row => ({ ...row, ...mapping[row[column]][0] })));
+
+            // check if column is number
+            if (isNaN(this.data[i][column])) {
+                throw new Error('Column ' + column + ' is not a number');
+            }
+            if (max < this.data[i][column]) {
+                max = this.data[i][column];
+            }
+        }
+        return max;
     }   
-    // return a new dataframe with columns grouped by the selected column
-    // Example: df.groupBy('country')
-    // Example: df.groupBy('country').show()
-    // Example: df.groupBy('country').show(2)
+    // get min value of column
+    min(column) {
+        var min = 0;
+         // check is column exist
+         if (this.data[0][column] === undefined) {
+            // rise error
+            throw new Error('Column ' + column + ' does not exist');
+        }
+
+        // check if column is number
+        if (isNaN(this.data[0][column])) {
+            throw new Error('Column ' + column + ' is not a number');
+        }
+        for (var i = 0; i < this.data.length; i++) {
+           
+            if (min > this.data[i][column]) {
+                min = this.data[i][column];
+            }
+        }
+        return min;
+    }
+    // get average value of column
+    avg(column) {
+        var sum = 0;
+         // check is column exist
+         if (this.data[0][column] === undefined) {
+            // rise error
+            throw new Error('Column ' + column + ' does not exist');
+        }
+
+        // check if column is number
+        if (isNaN(this.data[0][column])) {
+            throw new Error('Column ' + column + ' is not a number');
+        }
+        for (var i = 0; i < this.data.length; i++) {
+           
+            sum += this.data[i][column];
+        }
+        return sum / this.data.length;
+    }
+    // get median value of column
+    median(column) {
+        var median = 0;
+        var values = [];
+         // check is column exist
+         if (this.data[0][column] === undefined) {
+            // rise error
+            throw new Error('Column ' + column + ' does not exist');
+        }
+
+        // check if column is number
+        if (isNaN(this.data[0][column])) {
+            throw new Error('Column ' + column + ' is not a number');
+        }
+        for (var i = 0; i < this.data.length; i++) {
+           
+            values.push(this.data[i][column]);
+        }
+        values.sort(function (a, b) { return a - b; });
+        var half = Math.floor(values.length / 2);
+        if (values.length % 2) {
+            median = values[half];
+        } else {
+            median = (values[half - 1] + values[half]) / 2.0;
+        }
+        return median;
+    }
+    // get variance value of column
+    variance(column) {
+        var variance = 0;
+         // check is column exist
+         if (this.data[0][column] === undefined) {
+            // rise error
+            throw new Error('Column ' + column + ' does not exist');
+        }
+
+        // check if column is number
+        if (isNaN(this.data[0][column])) {
+            throw new Error('Column ' + column + ' is not a number');
+        }
+        var avg = this.avg(column);
+
+        for (var i = 0; i < this.data.length; i++) {
+           
+            variance += Math.pow(this.data[i][column] - avg, 2);
+        }
+        return variance / this.data.length;
+    }
+    // get standard deviation value of column
+    std(column) {
+        return Math.sqrt(this.variance(column));
+    }
+    // get distinct values of column
+    distinct(column) {
+        var distinct = [];
+        for (var i = 0; i < this.data.length; i++) {
+            // check is column exist
+            if (this.data[i][column] === undefined) {
+                // rise error
+                throw new Error('Column ' + column + ' does not exist');
+            }
+            if (!distinct.includes(this.data[i][column])) {
+                distinct.push(this.data[i][column]);
+            }
+        }
+        return distinct;
+    }
+    
+    // get dataframe rows
+    rows() {
+        return this.data;
+    }
+    // get dataframe row by index
+    row(index) {
+        return this.data[index];
+    }
+    // get dataframe column by name
+    column(column) {
+        var values = new DataFrame();
+          // check is column exist
+          if (this.data[0][column] === undefined) {
+            // rise error
+            throw new Error('Column ' + column + ' does not exist');
+        }
+        for (var i = 0; i < this.data.length; i++) {
+          
+            values.push(this.data[i][column]);
+        }
+        return values;
+    }
+    // get dataframe column by index
+    columnByIndex(index) {
+        var values = new DataFrame();
+        for (var i = 0; i < this.data.length; i++) {
+            values.push(this.data[i][this.headers()[index]]);
+        }
+        return values;
+    }
+    // get dataframe group by columns
+    groupBy(columns) {
+        var groups = new DataFrame();
+        // get headers
+    
+        for (var i = 0; i < this.data.length; i++) {
+            // create aggregate key
+            var row = [];
+            
+            for(var j=0; j<columns.length; j++)
+            {              
+                // key, value
+                row[columns[j]]=this.data[i][columns[j]];                
+            }           
+            
+            groups.push(row);
+        }
+        return groups;
+    }
+
+    // generate index of position of the columns
+    // example : df.createIndex(['nste', 'somo', 'socv']);
+    // create btree index for the columns of the first dataframe
+    // example : df.createIndex(['nste', 'somo', 'socv']);
+    createColumnIndex(column) {
+        var index ={};
+     
+        for (var i = 0; i < this.data.length; i++) {
+            // create aggregate key            
+            var row = this.data[i][column] ;
+         //  console.log(this.data[i]);
+            // if row is not in index then add it and adding the data row
+              if(index[row] === undefined)
+              {
+                index[row] = [];                
+              }
+              index[row].push(this.data[i]);                         
+        }
+       
+        return index;
+    }
+   
     
 
+
+      // get dataframe group by columns and aggregate by sum based on columns a key
+      sumGroupBy(key,columns) {       
+        var index = this.createColumnIndex(key);       
+        // local hash table
+        var sumColumns = {};
+        // get sum of columns
+        for (key in index) {
+            // get the rows of the key
+            var rows = index[key];
+            for(var i=0; i<rows.length; i++)
+            {
+              //  console.log(rows[i]);
+                // if row is not in hash table then add it
+                if(sumColumns[key] === undefined)
+                {
+                    sumColumns[key] = [];
+                    for(var j=0; j<columns.length; j++)
+                    {
+                        sumColumns[key][columns[j]] = 0;
+                    }
+                }
+                // sum the columns
+                for(var j=0; j<columns.length; j++)
+                {
+                    sumColumns[key][columns[j]] += rows[i][columns[j]];
+                }
+            }          
+            
+        }
+
+
+
+        // convert hash table to dataframe
+        var sumColumnsDf = new DataFrame();
+        for (var key in sumColumns) {
+            var row = [];
+            row['key'] = key;
+            for (var i = 0; i < columns.length; i++) {
+                row[columns[i]] = sumColumns[key][columns[i]];
+            }
+            sumColumnsDf.push(row);
+        }
+        return sumColumnsDf;
+
+    }
+
+    // get distinct values of column
+    distinct(column) {
+        var distinct = new DataFrame();
+        for (var i = 0; i < this.data.length; i++) {
+            // check is column exist
+            if (this.data[i][column] === undefined) {
+                // rise error
+                throw new Error('Column ' + column + ' does not exist');
+            }
+            if (!distinct.includes(this.data[i][column])) {
+                distinct.push(this.data[i][column]);
+            }
+        }
+        return distinct;
+    }
+
+    // create btree index for the columns of the first dataframe
+    // example : df.createIndex(['nste', 'somo', 'socv']);
+    createAggregateIndex(column) {
+        var index = {};
+     
+        for (var i = 0; i < this.data.length; i++) {
+            // create aggregate key
+            var row = "";
+            for(var j=0; j<column.length; j++)
+            {
+                row += this.data[i][column[j]] + "_";
+            }
+              // if row is not in index then add it and adding the data row
+              if(index[row] === undefined)
+                index[row] = [];
+              
+              index[row].push(this.data[i]);
+            
+             
+        }
+        return index;
+    }
+   
+    // inner join two dataframe by condition
+    // example : df1.merge(df2, 'row1["nste"] == row2["nste"] ', ['somo', 'socv']); 
+    merge(df, jcolums, columns) {
+        
+        var index1 = this.createAggregateIndex(jcolums);
+        var index2 = df.createAggregateIndex(jcolums);
+        var mergedData = new DataFrame();
+        for (var key in index1) {
+            // adding the data row of the first dataframe
+            var row1 = index1[key][0];
+            if (index2[key] !== undefined) {
+               // adding the data row of the second dataframe
+                var row2 = index2[key][0];
+                var row = [];
+                row['key'] = key;
+                for(var i=0; i<columns.length; i++)
+                {
+                    row[columns[i]] = row1[columns[i]];
+                }
+                for(var i=0; i<columns.length; i++)
+                {
+                    row[columns[i]+'_2'] = row2[columns[i]];
+                }
+               // console.log(row);
+                mergedData.push(row);
+            }
+        }
+        
+        return  mergedData;
+    }
+
+
+    // filter dataframe by sql like condition
+    // example : df.filter('row["srcv"] > 0')
+
+    filter(condition) {
+        var filteredData = new DataFrame();
+        this.data.forEach(function (row) {
+         //  filter by condition
+         // eval() function evaluates JavaScript code represented as a string.
+            if (eval(condition)) {
+                filteredData.push(row);
+            }
+        });
+        return filteredData;
+    }
+
+    
+
+
 }
-
-
